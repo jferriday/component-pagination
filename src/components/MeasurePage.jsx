@@ -3,10 +3,10 @@ import ContentBlock from '../ContentBlock'
 import { RowHeading, RowDataRow } from './RowData'
 
 
-function MeasurePage() {
+function MeasurePage({setParentPageState}) {
 	// Generate an array of components
 	const heights = [200, 600, 340, 190, 240, 333, 25, 150, 80, 230, 20, 70]
-	const rowData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 22, 231, 254]
+	const rowData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 	const heightComponents = [
 		...heights.map((height, index) => <ContentBlock key={index} id={`height-${index}`} height={height} width={500} />),
 	]
@@ -27,9 +27,7 @@ const rowComponents = [
 		let measurements = []
 		console.log(componentsToRender)
 		componentsToRender.forEach((comp, index) => {
-			console.log(comp.props.id)
 			const renderedComponent = document.getElementById(comp.props.id)
-			console.log(renderedComponent)
 			const height = renderedComponent.offsetHeight || ''
 			measurements.push({
 				component: comp,
@@ -70,9 +68,6 @@ const rowComponents = [
 		const objectHeight = object.height
 		const remainingHeight = pages[pageIndex].remainingHeight
 		let currentPageIndex = pageIndex
-		console.log(pages)
-		console.log(pageIndex)
-		console.log(remainingHeight)
 		// If there is space for a component, add it to the page
 		if( 
 			(!object.component.props.isRowHeader && (remainingHeight >= objectHeight))
@@ -108,7 +103,7 @@ const rowComponents = [
 
 	function groupIntoPages() {
 		// Page setup
-		const maxPageHeight = 780
+		const maxPageHeight = 595
 		// Initialise first page in the pages array
 		const pages = [{
 			remainingHeight: maxPageHeight,
@@ -132,8 +127,13 @@ const rowComponents = [
 				pageIndex = newIndex
 			}		
 		})
-		console.log(pages)
+
+		setParentPageState(pages)
 	}
+	// Group elements into pages when the component renders.
+	useEffect(() => {
+		groupIntoPages()
+	}, [])
 
   return (
 	<>
