@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import ContentBlock from '../ContentBlock'
 import { RowHeading, RowDataRow } from './RowData'
+import PageHeader from './PageHeader'
 
 
 function MeasurePage({setParentPageState}) {
@@ -37,7 +38,7 @@ const rowComponents = [
 		return measurements
 	}
 
-	function addToPagesAndUpdateIndex(object, pages, pageIndex, maxPageHeight) {
+	function addToPagesAndUpdateIndex(object, headerComponent, pages, pageIndex, maxPageHeight) {
 		// Object is the current object we are adding
 		// pages is the page array
 		// pageIndex is the current page index we're working on
@@ -55,7 +56,7 @@ const rowComponents = [
 			// otherwise, create a new page with the component inside it
 			pages.push({
 				remainingHeight:  maxPageHeight - objectHeight,
-				components: [object.component]
+				components: [headerComponent, object.component]
 			})
 			// Increment the index of the page we are working on
 			currentPageIndex += 1
@@ -64,7 +65,7 @@ const rowComponents = [
 		return currentPageIndex
 	}
 
-	function addRowComponentToPagesAndUpdateIndex(object, pages, pageIndex, maxPageHeight, currentRowHeader) {
+	function addRowComponentToPagesAndUpdateIndex(object, headerComponent, pages, pageIndex, maxPageHeight, currentRowHeader) {
 		const objectHeight = object.height
 		const remainingHeight = pages[pageIndex].remainingHeight
 		let currentPageIndex = pageIndex
@@ -83,14 +84,14 @@ const rowComponents = [
 			if(object.component.props.isRowHeader) {
 				pages.push({
 					remainingHeight:  maxPageHeight - objectHeight,
-					components: [object.component]
+					components: [headerComponent, object.component]
 				})
 		
 			} else {
 				const rowHeaderHeight = currentRowHeader.height
 				pages.push({
 					remainingHeight:  maxPageHeight - objectHeight - rowHeaderHeight,
-					components: [currentRowHeader.component, object.component]
+					components: [headerComponent, currentRowHeader.component, object.component]
 				})
 				
 			}
@@ -101,13 +102,15 @@ const rowComponents = [
 		return currentPageIndex
 	}}
 
-	function groupIntoPages() {
+	function groupIntoPages({headerComponent, headerHeight, footerHeight, pageHeight}) {
 		// Page setup
-		const maxPageHeight = 595
+	
+		const maxPageHeight = pageHeight - footerHeight - headerHeight
+
 		// Initialise first page in the pages array
 		const pages = [{
 			remainingHeight: maxPageHeight,
-			components: []
+			components: [headerComponent]
 		}]
 		let pageIndex = 0
 
@@ -120,19 +123,25 @@ const rowComponents = [
 		componentsAndHeights.forEach(componentAndHeightObject => {
 			if(componentAndHeightObject.component.props.isRowComponent) {
 				if(componentAndHeightObject.component.props.isRowHeader) currentRowComponentHeader = componentAndHeightObject
-				const newIndex = addRowComponentToPagesAndUpdateIndex(componentAndHeightObject, pages, pageIndex, maxPageHeight, currentRowComponentHeader)
+				const newIndex = addRowComponentToPagesAndUpdateIndex(componentAndHeightObject, headerComponent, pages, pageIndex, maxPageHeight, currentRowComponentHeader)
 				pageIndex = newIndex
 			} else {
-				const newIndex = addToPagesAndUpdateIndex(componentAndHeightObject, pages, pageIndex, maxPageHeight)
+				const newIndex = addToPagesAndUpdateIndex(componentAndHeightObject, headerComponent, pages, pageIndex, maxPageHeight)
 				pageIndex = newIndex
 			}		
 		})
 
 		setParentPageState(pages)
 	}
+
 	// Group elements into pages when the component renders.
 	useEffect(() => {
-		groupIntoPages()
+		groupIntoPages({
+			headerComponent: <PageHeader />,
+			footerHeight: 20,
+			headerHeight: 60,
+			pageHeight: 595
+		})
 	}, [])
 
   return (

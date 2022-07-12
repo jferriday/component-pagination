@@ -37,8 +37,11 @@ function PrintPage() {
       orientation: 'landscape',
       hotfixes: ["px_scaling"]
     })
-    for(let image of canvasArray) {
+    for(let i = 0; i < canvasArray.length; i++) {
+      const image = canvasArray[i]
       doc.addImage(image, 'JPEG', 0, 0, 1123, 794)
+      doc.setFontSize(11)
+      doc.text(`Page ${i+1} of ${canvasArray.length}`, 1000, 774, {})
       if(canvasArray.indexOf(image) < (canvasArray.length - 1)) {
         // Don't add the page if we're at the end of the canvas array
         doc.addPage('a4','landscape')
